@@ -33,6 +33,8 @@ namespace MemMapCacheLib
 
 		public Encoding Encoding { get; set; }
 
+		public bool IsConnected { get { return _tcpClient.Connected; } }
+
 		public int MaxKeyLength { get { return 4096 - 32; } } //32 bytes for datetime string... it's an overkill i know
 
 		public int Port { get; set; }
@@ -47,6 +49,9 @@ namespace MemMapCacheLib
 		}
 
 		public T Get<T>(string key) {
+			if (!this.IsConnected)
+				return default(T);
+
 			try {
 				var mmf = MemoryMappedFile.OpenExisting(key);
 				if (_keyExperations.ContainsKey(key)) {
@@ -87,6 +92,9 @@ namespace MemMapCacheLib
 
 			if (key.Length >= this.MaxKeyLength)
 				throw new Exception("The key has exceeded the maximum length.");
+
+			if (!this.IsConnected)
+				return;
 
 			expire = expire.ToUniversalTime();
 
