@@ -1,0 +1,10 @@
+MemMapCache/bin
+MemMapCache/obj
+MemMapCacheLib/bin
+MemMapCacheLib/obj
+TestResults
+TestResults/*
+*.user
+*.suo
+_ReSharper.*
+*.sln.cache
