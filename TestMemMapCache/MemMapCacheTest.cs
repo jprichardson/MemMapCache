@@ -99,6 +99,11 @@ namespace TestMemMapCache
 
 		}
 
-
+		[TestMethod()]
+		public void TestSetGetWithExpiration() {
+			string s = DateTime.UtcNow.ToString("s");
+			Assert.AreEqual("", s);
+			Console.WriteLine(s);
+		}
 	}
 }

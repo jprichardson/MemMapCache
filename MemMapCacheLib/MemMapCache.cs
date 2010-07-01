@@ -11,6 +11,8 @@ namespace MemMapCacheLib
 {
 	public class MemMapCache
 	{
+		private static string DELIM = "[!@#]";
+
 		private TcpClient _tcpClient;
 		private NetworkStream _ns;
 		private BinaryFormatter _bf;
@@ -27,7 +29,7 @@ namespace MemMapCacheLib
 
 		public Encoding Encoding { get; set; }
 
-		public int MaxKeyLength { get { return 4096; } }
+		public int MaxKeyLength { get { return 4096 - 32; } } //32 bytes for datetime string... it's an overkill i know
 
 		public int Port { get; set; }
 		
