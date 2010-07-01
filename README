@@ -21,3 +21,6 @@ It's very simple to use.
 	var newCol = cache.Get<Dictionary<string,int>>("myKey");
 
 
+You can follow me on Twitter: @jprichadson
+Read my blog on entrepreneurship: http://techneur.com
+

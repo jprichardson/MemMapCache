@@ -5,7 +5,19 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MemMapCache", "MemMapCache\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MemMapCacheLib", "MemMapCacheLib\MemMapCacheLib.csproj", "{5E729049-2676-4EBC-B57B-7833A796CBAA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestMemMapCache", "TestMemMapCache\TestMemMapCache.csproj", "{5525EE41-9487-4FA0-914C-7D14F3B296FA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0F3F9085-1845-48F0-B523-BA50DEC9BEF0}"
+	ProjectSection(SolutionItems) = preProject
+		Local.testsettings = Local.testsettings
+		MemMapCache.vsmdi = MemMapCache.vsmdi
+		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
+	EndProjectSection
+EndProject
 Global
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = MemMapCache.vsmdi
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -35,6 +47,16 @@ Global
 		{5E729049-2676-4EBC-B57B-7833A796CBAA}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{5E729049-2676-4EBC-B57B-7833A796CBAA}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{5E729049-2676-4EBC-B57B-7833A796CBAA}.Release|x86.ActiveCfg = Release|Any CPU
+		{5525EE41-9487-4FA0-914C-7D14F3B296FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5525EE41-9487-4FA0-914C-7D14F3B296FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5525EE41-9487-4FA0-914C-7D14F3B296FA}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{5525EE41-9487-4FA0-914C-7D14F3B296FA}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{5525EE41-9487-4FA0-914C-7D14F3B296FA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5525EE41-9487-4FA0-914C-7D14F3B296FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5525EE41-9487-4FA0-914C-7D14F3B296FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5525EE41-9487-4FA0-914C-7D14F3B296FA}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{5525EE41-9487-4FA0-914C-7D14F3B296FA}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{5525EE41-9487-4FA0-914C-7D14F3B296FA}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

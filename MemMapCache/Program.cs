@@ -17,7 +17,7 @@ namespace MemMapCache
 		private static Dictionary<string, MemoryMappedFile> _files = new Dictionary<string, MemoryMappedFile>();
 
 		public static void Main(string[] args) {
-			Console.WriteLine("Starting MMCache...");
+			Console.WriteLine("Starting MemMapCache...");
 			var server = new TcpListener(IPAddress.Parse("127.0.0.1"), 57742);
 
 			var task = Task.Factory.StartNew(() =>
@@ -40,7 +40,10 @@ namespace MemMapCache
 							key = key.Trim();
 
 							var mmf = MemoryMappedFile.OpenExisting(key);
-							_files.Add(key, mmf);
+							if (_files.ContainsKey(key))
+								_files.Add(key, mmf);
+							else 
+								_files[key] = mmf;
 
 							Console.WriteLine("Key: " + key);
 						}
