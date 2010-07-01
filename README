@@ -1,0 +1,23 @@
+I needed a cache that could support over 1 MB of data chunks, so Memcache didn't cut it. It only needed to be on the local machine of my software, so I figured that Memory Mapping would be the easiest solution. MemMapCache was born.
+
+
+It's licensed under the Apache license.
+
+It's very simple to use.
+1) Make sure that MemMapCache.exe is running.
+2) Include MemMapCacheLib in your project.
+3) Usage:
+
+
+	var cache = new MemMapCache();
+	cache.Connect();
+
+	var col = new Dictionary<string, int>();
+	col.Add("hello", 5);
+	col.Add("hi", 2);
+
+	cache.Set<Dictionary<string,int>>("myKey", col);
+
+	var newCol = cache.Get<Dictionary<string,int>>("myKey");
+
+
