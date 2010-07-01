@@ -18,14 +18,16 @@ namespace MemMapCache
 		private static string DELIM = "[!@#]";
 
 		private static Dictionary<string, KeyValuePair<MemoryMappedFile, DateTime>> _files = new Dictionary<string, KeyValuePair<MemoryMappedFile, DateTime>>();
+		private static SortedList<DateTime, Dictionary<string,string>> _expirationKeys = new SortedList<DateTime, Dictionary<string, string>>();
 
 		private static object _fileLock = new object();
+		private static object _keyListLock = new object();
 
 		public static void Main(string[] args) {
 			Console.WriteLine("Starting MemMapCache...");
 			var server = new TcpListener(IPAddress.Parse("127.0.0.1"), 57742);
 
-			var task = Task.Factory.StartNew(() => {
+			var mainTask = Task.Factory.StartNew(() => {
 				server.Start();
 
 				while (true) {
@@ -50,13 +52,24 @@ namespace MemMapCache
 
 									DateTime? dt = null;
 									if (data.Length > 1) {
-										dt = Convert.ToDateTime(data[1].Trim());
+										try {
+											dt = Convert.ToDateTime(data[1].Trim());
+										}
+										catch (Exception ex) {
+											Console.WriteLine(ex.Message);
+											Console.WriteLine(data[1].Trim());
+										}
 										AddKey(key, mmf, dt.Value);
 									}
 									else
 										AddKey(key, mmf);
 
-									Console.WriteLine("Key: " + key);
+									Console.Write("Key: " + key);
+									if (dt != null)
+										Console.WriteLine(" expires at: " + dt.Value.ToString("s"));
+									else
+										Console.WriteLine("");
+									
 									ClearBuffer(buf);
 								}
 								else
@@ -72,7 +85,29 @@ namespace MemMapCache
 
 			}, TaskCreationOptions.LongRunning);
 
-			task.Wait();
+			var expirationTask = Task.Factory.StartNew(() =>{
+				while (mainTask.Status == TaskStatus.Running) {
+					if (_expirationKeys.Count > 0){
+						var dt = _expirationKeys.Keys.First();
+						if (DateTime.UtcNow > dt){
+							foreach (var key in _expirationKeys[dt].Keys) {
+								lock (_fileLock) {
+									var mmf = _files[key].Key;
+									mmf.Dispose(); //kill it;
+									_files.Remove(key);
+									Console.WriteLine("Removed: " + key + " at " + dt.ToString("s"));
+								}
+							}
+
+							lock (_keyListLock) {
+								_expirationKeys.Remove(dt);
+							}
+						}
+					}
+				}
+			}, TaskCreationOptions.LongRunning);
+
+			Task.WaitAll(mainTask, expirationTask);
 		}
 
 		private static void AddKey(string key, MemoryMappedFile mmf) {
@@ -84,10 +119,20 @@ namespace MemMapCache
 				if (!_files.ContainsKey(key)) {
 					var kvp = new KeyValuePair<MemoryMappedFile, DateTime>(mmf, dt);
 					_files.Add(key, kvp);
-				}
-				else {
+				} else {
 					_files[key] = new KeyValuePair<MemoryMappedFile, DateTime>(mmf, dt);
 				}
+			}
+
+			lock (_keyListLock) {
+				if (!_expirationKeys.ContainsKey(dt)) {
+					var d = new Dictionary<string, string>();
+					_expirationKeys.Add(dt, d);
+					d.Add(key, key);
+				}
+				else
+					if (!_expirationKeys[dt].ContainsKey(key))
+						_expirationKeys[dt].Add(key, key);
 			}
 		}
 

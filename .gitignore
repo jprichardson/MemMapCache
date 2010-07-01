@@ -2,6 +2,8 @@ MemMapCache/bin
 MemMapCache/obj
 MemMapCacheLib/bin
 MemMapCacheLib/obj
+TestMemMapCache/bin
+TestMemMapCache/obj
 TestResults
 TestResults/*
 *.user
