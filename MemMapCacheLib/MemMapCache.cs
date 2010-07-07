@@ -119,5 +119,24 @@ namespace MemMapCacheLib
 			_ns.Write(buf, 0, buf.Length);
 			_ns.Flush();
 		}
+
+		public T TryGetThenSet<T>(string key, Func<T> cacheMiss) {
+			return this.TryGetThenSet<T>(key, DateTime.MaxValue, cacheMiss);
+		}
+
+		public T TryGetThenSet<T>(string key, TimeSpan expire, Func<T> cacheMiss) {
+			DateTime expireDT = DateTime.Now.Add(expire);
+			return this.TryGetThenSet<T>(key, expireDT, cacheMiss);
+		}
+
+		public T TryGetThenSet<T>(string key, DateTime expire, Func<T> cacheMiss) {
+			T obj = this.Get<T>(key);
+			if (obj == null) {
+				obj = cacheMiss.Invoke();
+				this.Set(key, obj, expire);
+			}
+
+			return obj;
+		}
 	}
 }
