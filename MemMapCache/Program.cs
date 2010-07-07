@@ -9,6 +9,7 @@ using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
+using System.Timers;
 
 
 namespace MemMapCache
@@ -85,29 +86,13 @@ namespace MemMapCache
 
 			}, TaskCreationOptions.LongRunning);
 
-			var expirationTask = Task.Factory.StartNew(() =>{
-				while (mainTask.Status == TaskStatus.Running) {
-					if (_expirationKeys.Count > 0){
-						var dt = _expirationKeys.Keys.First();
-						if (DateTime.UtcNow > dt){
-							foreach (var key in _expirationKeys[dt].Keys) {
-								lock (_fileLock) {
-									var mmf = _files[key].Key;
-									mmf.Dispose(); //kill it;
-									_files.Remove(key);
-									Console.WriteLine("Removed: " + key + " at " + dt.ToString("s"));
-								}
-							}
+			var timer = new Timer();
+			timer.Elapsed += new ElapsedEventHandler(OnCleanCacheEvent);
 
-							lock (_keyListLock) {
-								_expirationKeys.Remove(dt);
-							}
-						}
-					}
-				}
-			}, TaskCreationOptions.LongRunning);
+			timer.Interval = 60000;
+			timer.Start();
 
-			Task.WaitAll(mainTask, expirationTask);
+			Task.WaitAll(mainTask);
 		}
 
 		private static void AddKey(string key, MemoryMappedFile mmf) {
@@ -139,6 +124,28 @@ namespace MemMapCache
 		private static void ClearBuffer(byte[] buf) {
 			for (int x = 0; x < buf.Length; ++x)
 				buf[x] = 0;
+		}
+
+		private static void OnCleanCacheEvent(object source, ElapsedEventArgs e) {
+			Console.WriteLine("Cleaning Cache...");
+			if (_expirationKeys.Count > 0) {
+				var dt = _expirationKeys.Keys.First();
+				if (DateTime.UtcNow > dt) {
+					foreach (var key in _expirationKeys[dt].Keys) {
+						lock (_fileLock) {
+							var mmf = _files[key].Key;
+							mmf.Dispose(); //kill it;
+							_files.Remove(key);
+							Console.WriteLine("Removed: " + key + " at " + dt.ToString("s"));
+						}
+					}
+
+					lock (_keyListLock) {
+						_expirationKeys.Remove(dt);
+					}
+				}
+			}
+			Console.WriteLine("Cache clean done.");
 		}
 	}
 }

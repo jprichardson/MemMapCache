@@ -82,6 +82,11 @@ namespace MemMapCacheLib
 			this.Set<T>(key, obj, this.ChunkSize, expire);
 		}
 
+		public void Set<T>(string key, T obj, TimeSpan expire) {
+			DateTime expireDT = DateTime.Now.Add(expire);
+			this.Set<T>(key, obj, this.ChunkSize, expireDT);
+		}
+
 		public void Set<T>(string key, T obj, long size) {
 			this.Set<T>(key, obj, size, DateTime.MaxValue);
 		}
