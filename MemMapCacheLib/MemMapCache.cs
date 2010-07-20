@@ -5,6 +5,7 @@ using System.Text;
 using System.Net;
 using System.Net.Sockets;
 using System.IO.MemoryMappedFiles;
+using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 
 namespace MemMapCacheLib
@@ -65,6 +66,9 @@ namespace MemMapCacheLib
 				var vs = mmf.CreateViewStream();
 				var o = _bf.Deserialize(vs);
 				return (T)o;
+			}
+			catch (SerializationException ex) {
+				throw ex;
 			}
 			catch (Exception ex) {
 				if (_keyExperations.ContainsKey(key))

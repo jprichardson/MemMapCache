@@ -29,7 +29,13 @@ namespace MemMapCache
 			var server = new TcpListener(IPAddress.Parse("127.0.0.1"), 57742);
 
 			var mainTask = Task.Factory.StartNew(() => {
-				server.Start();
+				try {
+					server.Start();
+				}
+				catch (Exception ex) {
+					Console.WriteLine("Could not start the server. Shutting down.\n\nError message: " + ex.Message);
+					Environment.Exit(-2);
+				}
 
 				while (true) {
 					Console.WriteLine("Listening...");
@@ -133,10 +139,12 @@ namespace MemMapCache
 				if (DateTime.UtcNow > dt) {
 					foreach (var key in _expirationKeys[dt].Keys) {
 						lock (_fileLock) {
-							var mmf = _files[key].Key;
-							mmf.Dispose(); //kill it;
-							_files.Remove(key);
-							Console.WriteLine("Removed: " + key + " at " + dt.ToString("s"));
+							if (_files.ContainsKey(key)) {
+								var mmf = _files[key].Key;
+								mmf.Dispose(); //kill it;
+								_files.Remove(key);
+								Console.WriteLine("Removed: " + key + " at " + dt.ToString("s"));
+							}
 						}
 					}
 
