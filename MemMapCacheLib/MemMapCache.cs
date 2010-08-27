@@ -22,7 +22,7 @@ namespace MemMapCacheLib
 
 		public MemMapCache() {
 			this.Encoding = ASCIIEncoding.ASCII;
-			this.ChunkSize = 1024 * 1024 * 10; //10MB
+			this.ChunkSize = 1024 * 1024 * 30; //10MB
 
 			this.Server = "127.0.0.1"; //limited to local
 			this.Port = 57742;
@@ -63,7 +63,8 @@ namespace MemMapCacheLib
 					}
 				}
 
-				var vs = mmf.CreateViewStream();
+				var vs = mmf.CreateViewStream(0, 0);
+			
 				var o = _bf.Deserialize(vs);
 				return (T)o;
 			}
@@ -96,32 +97,37 @@ namespace MemMapCacheLib
 		}
 
 		public void Set<T>(string key, T obj, long size, DateTime expire) {
-			if (String.IsNullOrEmpty(key))
-				throw new Exception("The key can't be null or empty.");
+			try {
+				if (String.IsNullOrEmpty(key))
+					throw new Exception("The key can't be null or empty.");
 
-			if (key.Length >= this.MaxKeyLength)
-				throw new Exception("The key has exceeded the maximum length.");
+				if (key.Length >= this.MaxKeyLength)
+					throw new Exception("The key has exceeded the maximum length.");
 
-			if (!this.IsConnected)
-				return;
+				if (!this.IsConnected)
+					return;
 
-			expire = expire.ToUniversalTime();
+				expire = expire.ToUniversalTime();
 
-			if (!_keyExperations.ContainsKey(key))
-				_keyExperations.Add(key, expire);
-			else
-				_keyExperations[key] = expire;
+				if (!_keyExperations.ContainsKey(key))
+					_keyExperations.Add(key, expire);
+				else
+					_keyExperations[key] = expire;
 
-			var mmf = MemoryMappedFile.CreateOrOpen(key, size);
-			var vs = mmf.CreateViewStream();
-			_bf.Serialize(vs, obj);
+				var mmf = MemoryMappedFile.CreateOrOpen(key, size);
+				var vs = mmf.CreateViewStream();
+				_bf.Serialize(vs, obj);
 
-			var cmd = "{0}{1}{2}";
-			cmd = string.Format(cmd, key, DELIM, expire.ToString("s"));
+				var cmd = "{0}{1}{2}";
+				cmd = string.Format(cmd, key, DELIM, expire.ToString("s"));
 
-			var buf = this.Encoding.GetBytes(cmd);
-			_ns.Write(buf, 0, buf.Length);
-			_ns.Flush();
+				var buf = this.Encoding.GetBytes(cmd);
+				_ns.Write(buf, 0, buf.Length);
+				_ns.Flush();
+			}
+			catch (Exception ex) {
+				Console.WriteLine("MemMapCache: Set Failed.\n\t" + ex.Message);
+			}
 		}
 
 		public T TryGetThenSet<T>(string key, Func<T> cacheMiss) {
@@ -138,6 +144,21 @@ namespace MemMapCacheLib
 			if (obj == null) {
 				obj = cacheMiss.Invoke();
 				this.Set(key, obj, expire);
+			}
+
+			return obj;
+		}
+
+		public T TryGetThenSet<T>(string key, long size, TimeSpan expire, Func<T> cacheMiss) {
+			DateTime expireDT = DateTime.Now.Add(expire);
+			return this.TryGetThenSet<T>(key, size, expireDT, cacheMiss);
+		}
+
+		public T TryGetThenSet<T>(string key, long size, DateTime expire, Func<T> cacheMiss) {
+			T obj = this.Get<T>(key);
+			if (obj == null) {
+				obj = cacheMiss.Invoke();
+				this.Set(key, obj, size, expire);
 			}
 
 			return obj;
