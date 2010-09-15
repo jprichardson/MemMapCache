@@ -125,6 +125,9 @@ namespace MemMapCacheLib
 				_ns.Write(buf, 0, buf.Length);
 				_ns.Flush();
 			}
+			catch (NotSupportedException) {
+				Console.WriteLine(String.Format("{0} is too small for {1}.", size, key));
+			}
 			catch (Exception ex) {
 				Console.WriteLine("MemMapCache: Set Failed.\n\t" + ex.Message);
 			}
