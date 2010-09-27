@@ -27,8 +27,12 @@ namespace MemMapCacheLib
 			this.Server = "127.0.0.1"; //limited to local
 			this.Port = 57742;
 
+			this.CacheHitAlwaysMiss = false;
+
 			_keyExperations = new Dictionary<string, DateTime>();
 		}
+
+		public bool CacheHitAlwaysMiss { get; set; } //ideal for Unit Testing of classes that depend upon this library.
 
 		public long ChunkSize { get; set; } 
 
@@ -51,6 +55,9 @@ namespace MemMapCacheLib
 
 		public T Get<T>(string key) {
 			if (!this.IsConnected)
+				return default(T);
+
+			if (this.CacheHitAlwaysMiss)
 				return default(T);
 
 			try {
